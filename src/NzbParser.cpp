@@ -408,10 +408,17 @@ NzbCollection parse(const QByteArray &remaining)
 	return result;
 }
 
+static bool isRar(const QByteArray &subject)
+{
+	return subject.contains(".rar&quot;") ||
+		subject.contains(".rar yEnc") ||
+		subject.contains(".rar - yEnc");
+}
+
 static bool operator< (const NzbCollectionFile &f1, const NzbCollectionFile &f2)
 {
-	bool f1Rar = f1.m_subject.contains(".rar&quot; - ") || f1.m_subject.contains(".rar - ");
-	bool f2Rar = f2.m_subject.contains(".rar&quot; - ") || f2.m_subject.contains(".rar - ");
+	bool f1Rar = isRar(f1.m_subject);
+	bool f2Rar = isRar(f2.m_subject);
 	if (f1Rar ^ f2Rar)
 		return f1Rar;
 	return f1.m_subject < f2.m_subject;
