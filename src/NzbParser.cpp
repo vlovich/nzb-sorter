@@ -20,6 +20,7 @@
 #include <limits>
 #include <QtDebug>
 #include <QtAlgorithms>
+#include <QByteArrayMatcher>
 
 #include "NzbParser.h"
 
@@ -410,9 +411,13 @@ NzbCollection parse(const QByteArray &remaining)
 
 static bool isRar(const QByteArray &subject)
 {
-	return subject.contains(".rar&quot;") ||
-		subject.contains(".rar yEnc") ||
-		subject.contains(".rar - yEnc");
+	static QByteArrayMatcher matcher1(".rar&quot;");
+	static QByteArrayMatcher matcher2(".rar yEnc");
+	static QByteArrayMatcher matcher3(".rar - yEnc");
+
+	return matcher1.indexIn(subject) != -1 ||
+		matcher2.indexIn(subject) != -1 ||
+		matcher3.indexIn(subject) != -1;
 }
 
 static bool operator< (const NzbCollectionFile &f1, const NzbCollectionFile &f2)
