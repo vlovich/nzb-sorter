@@ -5,6 +5,11 @@
 #include <QFile>
 #include <QList>
 
+/**
+ * Abstraction class for nzb file.  Relies on m_mmap & 0-copy feature of
+ * QByteArray to ensure that the only copy of the file that resides in
+ * memory is whatever the OS pages in from disk.
+ */
 class NzbFile
 {
 public:
