@@ -71,7 +71,7 @@ struct NzbCollection {
  * fairly sorted.  In this case, we'll definitely have better performance because
  * it'll just be insertion with the odd adjustment.
  */
-NzbCollection parse(QByteArray nzbFile);
+NzbCollection parse(const QByteArray &nzbFile);
 
 #endif /* NZB_PARSER_H_ */
 

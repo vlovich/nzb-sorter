@@ -38,7 +38,8 @@ static bool sortNzb(const QString &inputFile, QTextStream &qout, QTextStream &er
 	QList<QByteArray> sorted;
 	try {
 		NzbFile nf(inputFile);
-		sorted = nf.sorted();
+//		sorted = nf.sorted();
+		nf.printSorted(qout);
 	} catch(const char *msg) {
 		error << "Failure to process " << inputFile << ": " << msg << endl;
 		return false;
@@ -47,11 +48,11 @@ static bool sortNzb(const QString &inputFile, QTextStream &qout, QTextStream &er
 		return false;
 	}
 
-	if (sorted.size() == 0)
-		return false;
+//	if (sorted.size() == 0)
+//		return false;
 
-	foreach (QByteArray part, sorted)
-		qout << part;
+//	foreach (QByteArray part, sorted)
+//		qout << part;
 
 	return true;
 }

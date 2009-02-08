@@ -34,6 +34,7 @@ class NzbFile
 public:
 	NzbFile(QString path);
 
+	void printSorted(QTextStream &destination) const;
 	QList<QByteArray> sorted() const;
 
 protected:

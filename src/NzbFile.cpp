@@ -18,6 +18,8 @@
 */
 
 #include <limits>
+
+#include <QTextStream>
 #include <QtDebug>
 
 #include "NzbFile.h"
@@ -42,29 +44,42 @@ void NzbFile::init()
 	if (mapSize <= 0)
 		throw "File is too small";
 
+	// QByteArray uses an int (i.e 32-bits) instead of qint64.
+	// besides, 2GB nzb files are giant, so this should be fine anyways
 	if (mapSize > std::numeric_limits<int>::max())
 		throw "File is too big";
 
 	mapped = reinterpret_cast<char *>(m_backingFile.map(0, mapSize));
-
 	if (NULL == mapped)
 		throw "Unable to map file";
 
 	m_mmap = QByteArray::fromRawData(mapped, mapSize);
 }
 
+void NzbFile::printSorted(QTextStream &destination) const
+{
+	NzbCollection collection = parse(m_mmap);
+	destination << collection.m_xmlMagic << collection.m_openingTag;
+	
+	for (int i = 0; i < collection.m_files.size(); i++)
+		destination << collection.m_files.at(i).m_file;
+	for (int i = 0; i < collection.m_nonFiles.size(); i++)
+		destination << collection.m_nonFiles.at(i);
+	destination << "</nzb>" << endl;
+}
+
 QList<QByteArray> NzbFile::sorted() const
 {
-	QList<QByteArray> result;
 	NzbCollection collection = parse(m_mmap);
+	QList<QByteArray> result;
+	//result.reserve(3 + collection.m_files.size() + collection.m_nonFiles.size());
 	result += collection.m_xmlMagic;
 	result += collection.m_openingTag;
 	// No need to sort because the parser stores things sorted
 	// as it's parsing
 	//qSort(collection.m_files);
-	for (int i = 0; i < collection.m_files.size(); i++) {
+	for (int i = 0; i < collection.m_files.size(); i++)
 		result += collection.m_files.at(i).m_file;
-	}
 
 	result += collection.m_nonFiles;
 	result += "</nzb>";

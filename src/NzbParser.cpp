@@ -126,7 +126,7 @@ static NzbTag tagType(const QByteArray &text, int start, bool closing)
 {
 	if (text.at(start++) != '<') {
 #ifdef _DEBUG
-		qDebug() << text.left(std::max(0, start - 3));
+		qDebug() << text.mid(std::max(0, start - 3), 3);
 #endif /* _DEBUG */
 		throw "Attempting to find tag name of non-tag";
 	}
@@ -324,11 +324,11 @@ static int findAttribute(const QByteArray &text, const QByteArray &attrName, int
 	return -1;
 }
 
-NzbCollection parse(QByteArray nzbFile)
+NzbCollection parse(const QByteArray &remaining)
 {
 	NzbCollection result;
-	int i;
-	QByteArray remaining = nzbFile;
+	int i, j;
+	//QByteArray remaining = nzbFile;
 	bool nonWhitespace;
 
 	i = findNextTag(remaining, 0, nonWhitespace, true);
@@ -338,62 +338,72 @@ NzbCollection parse(QByteArray nzbFile)
 		throw "<nzb> tag should be the first opening tag";
 
 	result.m_xmlMagic = remaining.left(i);
-	remaining = remaining.mid(i);
-	i = findTagAttributesEnd(remaining, (sizeof("<nzb") - 1));
+	j = i;
+	i = findTagAttributesEnd(remaining, i + (sizeof("<nzb") - 1));
 	if (i == -1)
 		throw "Not a valid nzb file";
-	result.m_openingTag = remaining.left(i + 1);
-	remaining = remaining.mid(i + 1);
+	i++;
+	result.m_openingTag = remaining.mid(j, i - j);
+	Q_ASSERT(result.m_openingTag.startsWith("<nzb"));
+	Q_ASSERT(result.m_openingTag.endsWith(">"));
 
 	while (remaining.size()) {
 		NzbCollectionFile file;
+		int fileStart;
 
-		i = findNextTag(remaining, 0, nonWhitespace, false);
+		j = i;
+		fileStart = i = findNextTag(remaining, j, nonWhitespace, false);
+#ifdef _DEBUG
+		//qDebug() << remaining.mid(i, 10);
+#endif /* _DEBUG */
 		if (i == -1) {
+			i = j;
 			break;
 		}
-		if (i != 0) {
-			if (nonWhitespace)
-				result.m_nonFiles += remaining.mid(0, i);
-			remaining = remaining.mid(i);
-		}
-		if (File != tagType(remaining, 0, false))
+		if (nonWhitespace)
+			result.m_nonFiles += remaining.mid(j, i - j);
+		if (File != tagType(remaining, i, false))
 			throw "Illegal structure in nzb file";
-		i = findAttribute(remaining, "subject=", sizeof("<file ") - 1);
+		i = findAttribute(remaining, "subject=", i + sizeof("<file ") - 1);
 		if (i == -1)
 			throw "File tag not closed (while searching for subject attribute)";
 		Q_ASSERT(i < remaining.size());
 		if (remaining.at(i) == '>')
 			i--;
 		else if (i + 1 < remaining.size() && remaining.at(i + 1) == '"') {
-			i += 2;
-			int j = findAttributeClose(remaining, i);
-			if (j == -1)
+			j = i + 2;
+			i = findAttributeClose(remaining, j);
+			if (i == -1)
 				throw "Subject attribute not closed";
-			Q_ASSERT(remaining.at(j) == '"');
-			file.m_subject = remaining.mid(i, j - i);
+			Q_ASSERT(remaining.at(i) == '"');
+			file.m_subject = remaining.mid(j, i - j);
 			Q_ASSERT(file.m_subject.at(file.m_subject.size() - 1) != '"');
-			i = j + 1;
+			i++;
 		} else
 			throw "Illegal subject attribute";
 
-		int j = findClosingTag(remaining, File, i, true);
-		if (j == -1)
+		j = i;
+		i = findClosingTag(remaining, File, j, true);
+		if (i == -1)
 			throw "File tag not closed (searching for contents of <file ...>...</file>)";
-		file.m_file = remaining.mid(0, j + 1);
+		i++;
+		file.m_file = remaining.mid(fileStart, i - fileStart);
+#ifdef _DEBUG
+//		qDebug() << "!!!!!!\n" << file.m_file << "\n!!!!!!!!";
+#endif /* _DEBUG */
 		Q_ASSERT(file.m_file.startsWith("<file"));
 		Q_ASSERT(file.m_file.endsWith("</file>"));
-		remaining = remaining.mid(j + 1);
 		NzbFileList::iterator pos = qUpperBound(result.m_files.begin(), result.m_files.end(), file);
 		result.m_files.insert(pos, file);
 	}
-	i = findClosingTag(remaining, Nzb, 0, false);
+	j = i;
+	i = findClosingTag(remaining, Nzb, j, false);
 	if (i == -1)
 		throw "nzb tag not closed";
 	i -= (sizeof("</nzb>") - 1);
-	Q_ASSERT(i >= 0);
-	if (i > 0)
-		result.m_nonFiles += remaining.mid(0, i);
+	Q_ASSERT(i >= j);
+	if (i > j)
+		result.m_nonFiles += remaining.mid(j, i - j);
 	return result;
 }
 
