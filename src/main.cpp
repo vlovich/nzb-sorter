@@ -98,10 +98,10 @@ int main(int argc, char **argv)
 	bool partialFailed = false;
 
 	if (nzbList.size() == 1) {
-		allFailed = sortNzb(nzbList.first(), qout, qerr);
+		allFailed = !sortNzb(nzbList.first(), qout, qerr);
 	} else {
 		for (int i = 0; i < nzbList.size(); i+= 2) {
-			bool failed = sortNzb(nzbList.at(i), nzbList.at(i + 1), qerr);
+			bool failed = !sortNzb(nzbList.at(i), nzbList.at(i + 1), qerr);
 			allFailed = allFailed && failed;
 			partialFailed = partialFailed || failed;
 		}

@@ -179,6 +179,7 @@ static int findNextTag(const QByteArray &text, int start, bool &nonWhitespace, b
 		{
 			case ' ':
 			case '\n':
+			case '\r':
 			case '\t':
 				break;
 			case '<':
