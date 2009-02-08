@@ -40,10 +40,10 @@ static bool sortNzb(const QString &inputFile, QTextStream &qout, QTextStream &er
 		NzbFile nf(inputFile);
 		sorted = nf.sorted();
 	} catch(const char *msg) {
-		error << "Failure to process" << inputFile << ": " << msg << endl;
+		error << "Failure to process " << inputFile << ": " << msg << endl;
 		return false;
 	} catch(...) {
-		error << "Unexpected exception processing" << inputFile << endl;
+		error << "Unexpected exception processing " << inputFile << endl;
 		return false;
 	}
 
@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 {
 	QCoreApplication app(argc, argv);
 	QTextStream qout(stdout, QIODevice::WriteOnly);
-	QTextStream qerr(stdout, QIODevice::WriteOnly);
+	QTextStream qerr(stderr, QIODevice::WriteOnly);
 	QStringList arguments = QCoreApplication::arguments();
 	QString progName;
 	QStringList nzbList;
