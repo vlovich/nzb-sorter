@@ -27,6 +27,9 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 set(SORTER_SRCS NzbFile.cpp NzbParser.cpp main.cpp)
 
 add_definitions(${QT_DEFINITIONS})
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+	add_definitions(-D_DEBUG)
+endif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 
 set(SORTER_BINARY nzb-sorter)
 add_executable(${SORTER_BINARY} ${SORTER_SRCS})
