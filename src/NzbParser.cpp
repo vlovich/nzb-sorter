@@ -411,13 +411,23 @@ NzbCollection parse(const QByteArray &remaining)
 
 static bool isRar(const QByteArray &subject)
 {
+#ifdef LENIENT_RAR_DETECTION
+	static QByteArrayMatcher matcher0(".rar");
+#endif /* LENIENT_RAR_DETECTION */
+
 	static QByteArrayMatcher matcher1(".rar&quot;");
 	static QByteArrayMatcher matcher2(".rar yEnc");
 	static QByteArrayMatcher matcher3(".rar - yEnc");
+	static QByteArrayMatcher matcher4(".rar (");
 
-	return matcher1.indexIn(subject) != -1 ||
+	return 
+#ifdef LENIENT_RAR_DETECTION
+		matcher0.indexIn(subject) != -1 ||
+#endif /* LENIENT_RAR_DETECTION */
+		matcher1.indexIn(subject) != -1 ||
 		matcher2.indexIn(subject) != -1 ||
-		matcher3.indexIn(subject) != -1;
+		matcher3.indexIn(subject) != -1 ||
+		matcher4.indexIn(subject) != -1;
 }
 
 static bool operator< (const NzbCollectionFile &f1, const NzbCollectionFile &f2)
